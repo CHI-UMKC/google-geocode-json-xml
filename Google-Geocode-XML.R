@@ -1,6 +1,4 @@
 # Google Geocoding:  XML Example
-# http://code.google.com/apis/maps/documentation/geocoding/index.html
-#
 # Earl F Glynn, Franklin Center for Government & Public Integrity, 2010-12-15.
 
 library(XML)     # htmlTreeParse
