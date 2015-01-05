@@ -1,0 +1,122 @@
+http://maps.googleapis.com/maps/api/geocode/json?address=2411+Holmes+St,+Kansas+City,+MO,+64108
+
+Viewed in Firefox with JSONView 0.9 Add on:
+
+{
+
+    "results": [
+        {
+            "address_components": [
+                {
+                    "long_name": "2411",
+                    "short_name": "2411",
+                    "types": [
+                        "street_number"
+                    ]
+                },
+                {
+                    "long_name": "University of Missouri Kansas City: Hospital Hill Campus",
+                    "short_name": "University of Missouri Kansas City: Hospital Hill Campus",
+                    "types": [
+                        "establishment"
+                    ]
+                },
+                {
+                    "long_name": "Holmes Street",
+                    "short_name": "Holmes St",
+                    "types": [
+                        "route"
+                    ]
+                },
+                {
+                    "long_name": "Hospital Hill",
+                    "short_name": "Hospital Hill",
+                    "types": [
+                        "neighborhood",
+                        "political"
+                    ]
+                },
+                {
+                    "long_name": "Kansas City",
+                    "short_name": "KCMO",
+                    "types": [
+                        "locality",
+                        "political"
+                    ]
+                },
+                {
+                    "long_name": "Kaw",
+                    "short_name": "Kaw",
+                    "types": [
+                        "administrative_area_level_3",
+                        "political"
+                    ]
+                },
+                {
+                    "long_name": "Jackson County",
+                    "short_name": "Jackson County",
+                    "types": [
+                        "administrative_area_level_2",
+                        "political"
+                    ]
+                },
+                {
+                    "long_name": "Missouri",
+                    "short_name": "MO",
+                    "types": [
+                        "administrative_area_level_1",
+                        "political"
+                    ]
+                },
+                {
+                    "long_name": "United States",
+                    "short_name": "US",
+                    "types": [
+                        "country",
+                        "political"
+                    ]
+                },
+                {
+                    "long_name": "64108",
+                    "short_name": "64108",
+                    "types": [
+                        "postal_code"
+                    ]
+                },
+                {
+                    "long_name": "2741",
+                    "short_name": "2741",
+                    "types": [
+                        "postal_code_suffix"
+                    ]
+                }
+            ],
+            "formatted_address": "University of Missouri Kansas City: Hospital Hill Campus, 2411 Holmes Street, Kansas City, MO 64108, USA",
+            "geometry": {
+                "location": {
+                    "lat": 39.0831569,
+                    "lng": -94.5758491
+                },
+                "location_type": "ROOFTOP",
+                "viewport": {
+                    "northeast": {
+                        "lat": 39.08450588029149,
+                        "lng": -94.5745001197085
+                    },
+                    "southwest": {
+                        "lat": 39.0818079197085,
+                        "lng": -94.57719808029151
+                    }
+                }
+            },
+            "types": [
+                "street_address"
+            ]
+        }
+    ],
+    "status": "OK"
+
+}
+
+
+2015-01-05

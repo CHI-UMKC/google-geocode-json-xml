@@ -1,0 +1,208 @@
+---
+title: 'Google Geocoding: JSON Example'
+output: html_document
+---
+
+### Earl F Glynn, UMKC Center for Health Insights 
+
+These notes show a JSON Google Geocoding example using R.  See [Google info about geocoding with JSON output](https://developers.google.com/maps/documentation/geocoding/).
+
+Let's use the [RJSONIO package](http://cran.r-project.org/web/packages/RJSONIO/index.html).
+
+```{r}
+library(RJSONIO)   # fromJSON
+```
+
+Let's use the address of the UMKC School of Medicine:
+
+```{r}
+id     <- "UMKC SOM"
+street <- "2411 Holmes St"
+city   <- "Kansas City"
+state  <- "MO"
+zip    <- "64108"
+```
+
+The id above can be any value and is intended to be a unique record key.
+
+Google says ["All Geocoding API applications should use an API key"](https://developers.google.com/maps/documentation/geocoding/#api_key), but they appear to allow a small number of API calls without a key, like the one shown below.
+
+Google's example shows the various parts of the address are separated by a comma and a space, which is converted to a "+".  We'll follow their example.
+
+Let's form the URL that is needed (normally an API key would also be added):
+
+```{r}
+address <- paste(street, city, state, zip, sep=", ")
+URL <- paste("http://maps.googleapis.com/maps/api/geocode/json?address=",
+             gsub(" ", "+", address), sep="")
+URL
+```
+
+
+Let's get the returned JSON and inspect it:
+
+```{r}
+JSON <- fromJSON(URL)
+JSON
+```
+
+# JSON object
+
+Normally, we would only want to continue with a geocoded result if the status is "OK":
+
+```{r}
+JSON$status
+```
+
+When the JSON$status is "OK", the *results* list has at least one element. For now we will only look at the first element, but will record the number of elements to investigate problem addresses with multiple results later.
+
+The first of the results in the R JSON object can be broken into four objects:
+
+```{r}
+address_components <- JSON$results[[1]]$address_components
+formatted_address  <- JSON$results[[1]]$formatted_address
+geometry           <- JSON$results[[1]]$geometry
+types              <- JSON$results[[1]]$types
+```
+
+Let's look at each of these four objects in more detail.
+
+## Address Components
+ 
+address_components is a *list* that can be processed with *lapply*.  
+
+Each node of the list has three elements, long_name, short_name, and types. The names are a single token, but each type can be a vector of strings.  
+
+The following extracts three vectors of information from the *address_components*. 
+
+```{r}
+address_long_name <- unlist(lapply(address_components, "[", 1))
+stopifnot(names(address_long_name) == "long_name")
+address_short_name <- unlist(lapply(address_components, "[", 2))
+stopifnot(names(address_short_name) == "short_name")
+```
+
+The *stopifnot* calls above verify that the first element is always a *long_name* while lthe second is always a *short_name*.  
+
+Let's collapse all the type strings into a single string, but separated by a pipe, in case separation is needed later:
+
+```{r}
+address_types <- unlist(lapply(address_components, function(x){paste(x$types,collapse="|")}))
+```
+  
+While the Google documentation gives examples of address_types, it's not clear what might appear.  So, I will build my own list:
+
+```{r}
+knownAddressTypes <- c(
+  "street_number",
+  "establishment",
+  "route",
+  "neighborhood|political",
+  "locality|political",
+  "administrative_area_level_3|political",
+  "administrative_area_level_2|political",
+  "administrative_area_level_1|political",
+  "country|political",
+  "postal_code",
+  "postal_code_suffix")
+if (! all(address_types %in% knownAddressTypes) )
+{
+  cat("Unexpected address type(s) for", id, ":\n")
+  cat(address_types[which(!address_types %in% knownAddressTypes)], "\n")
+}
+```
+
+The address *components* can be put into a data.frame:
+
+```{r}
+components <- data.frame(types=address_types,
+                         short=address_short_name,
+                         long=address_long_name,
+                         stringsAsFactors=FALSE, row.names=1)
+components[-2,]  # suppress establishment row with extra wide fields.
+components[2,]
+```
+With the *address_type* as the row.name, a quick and easy R hash lookup is possible:
+
+```{r}
+components["street_number", "short"]
+components["route", "short"]
+components["locality|political", "long"]
+components["postal_code", "short"]
+components["postal_code_suffix", "short"]
+components["administrative_area_level_2|political", "short"]
+components["administrative_area_level_1|political", "short"]
+components["establishment", "short"]
+```
+
+## Formatted Address
+
+The *formatted_address* is a single string:
+
+```{r}
+  formatted_address
+```
+
+## Geometry
+
+The substructure of the *geometry* object is fairly easy to navigate:
+
+```{r}
+geometry
+
+geometry$location
+geometry$location["lat"]
+geometry$location["lng"]
+geometry$location_type
+
+geometry$viewport
+geometry$viewport$northeast
+geometry$viewport$northeast["lat"]
+geometry$viewport$northeast["lng"]
+geometry$viewport$southwest
+geometry$viewport$southwest["lat"]
+geometry$viewport$southwest["lng"]
+```
+
+## Types
+
+The *types* is a vector of strings:
+
+```{r}
+types
+```
+
+# Data.frame to return geocoded results
+
+Below the prefix "geo" is added to fields of the address that were inputs.  This allows a later comparison of inputs and outputs when geocoding problems are found.
+
+```{r}
+options(width=130)
+data.frame(id, 
+           status=JSON$status,
+           geostreet=paste(components["street_number", "short"],
+                           components["route", "short"]),
+           geocity=components["locality|political", "long"],
+           geostate=components["administrative_area_level_1|political", "short"],
+           geozip5=components["postal_code", "short"],
+           geozip4=components["postal_code_suffix", "short"],
+           county=components["administrative_area_level_2|political", "short"],
+           lat=geometry$location["lat"],
+           lng=geometry$location["lng"],
+           location.type=geometry$location_type,
+           formattted.address=formatted_address,
+           establishment=components["establishment", "short"],
+           types=types,
+           result.count=length(JSON$results),
+           row.names=1,
+           stringsAsFactors=FALSE)
+```
+
+Missing value fields will likely have NA values.  
+
+This example will be updated to reflect problems and workarounds found while using Google's geocoding API.
+
+*efg*  
+`r format(Sys.time(), "%Y-%m-%d %H%M")`
+
+                                                                                     
