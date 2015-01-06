@@ -1,29 +1,13 @@
----
-title: 'Google Geocoding: XML Example'
-output: html_document
----
-
-### Earl F Glynn, UMKC Center for Health Insights
-
-These notes show an XML Google Geocoding example using R.  See [Google info about geocoding with XML output](https://developers.google.com/maps/documentation/geocoding/#XML).
-
-Let's use the [XML package](http://cran.r-project.org/web/packages/XML/index.html).
-
-# get.geocode R function
-
-A *get.geocode* function was written to hide most of the XML details.
-
-Google says ["All Geocoding API applications should use an API key"](https://developers.google.com/maps/documentation/geocoding/#api_key), but they appear to allow a small number of API calls without a key, like the one shown below.
-
-Google's example shows the various parts of the address are separated by a comma and a space, which is converted to a "+".  We'll follow their example in forming the URL below.
-
-```{r}
 # Google Geocoding:  XML get.geocode function
 # Earl F Glynn, Franklin Center for Government & Public Integrity, 2010-12-15.
 # Modified 2012-01-06: extracted additional fields.
 
 library(XML)     # htmlTreeParse
 
+################################################################################
+
+# Function to call Google's Geocoding API for given street, city and state.
+# "id" could be used to add a "key" to the data record being processed.
 get.geocode <- function (id, street, city, state, zip)
 {
   address <- paste(street, city, state, zip, sep=", ")
@@ -105,31 +89,3 @@ get.geocode <- function (id, street, city, state, zip)
              result.count, row.names=1,
              stringsAsFactors=FALSE)
 }
-
-```
-
-## Example use of get.geocode function
-
-Let's use the address of the UMKC School of Medicine:
-
-```{r}
-id     <- "UMKC SOM"
-street <- "2411 Holmes St"
-city   <- "Kansas City"
-state  <- "MO"
-zip    <- "64108"
-
-d <- get.geocode(id, street, city, state, zip)
-```
-
-## Data.frame of geocoded results
-```{r}
-options(width=100)
-d
-```
-
-This example will be updated to reflect problems and workarounds found while using Google's geocoding API.
-
-*efg*
-`r format(Sys.time(), "%Y-%m-%d %H%M")`
-

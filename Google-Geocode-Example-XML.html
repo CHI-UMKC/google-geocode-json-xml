@@ -57,7 +57,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 <div id="earl-f-glynn-umkc-center-for-health-insights" class="section level3">
 <h3>Earl F Glynn, UMKC Center for Health Insights</h3>
-<p>These notes show an XML Google Geocoding example using R. See <a href="https://developers.google.com/maps/documentation/geocoding/">Google info about geocoding with XML output</a>.</p>
+<p>These notes show an XML Google Geocoding example using R. See <a href="https://developers.google.com/maps/documentation/geocoding/#XML">Google info about geocoding with XML output</a>.</p>
 <p>Let’s use the <a href="http://cran.r-project.org/web/packages/XML/index.html">XML package</a>.</p>
 </div>
 <div id="get.geocode-r-function" class="section level1">
@@ -65,43 +65,54 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <p>A <em>get.geocode</em> function was written to hide most of the XML details.</p>
 <p>Google says <a href="https://developers.google.com/maps/documentation/geocoding/#api_key">“All Geocoding API applications should use an API key”</a>, but they appear to allow a small number of API calls without a key, like the one shown below.</p>
 <p>Google’s example shows the various parts of the address are separated by a comma and a space, which is converted to a “+”. We’ll follow their example in forming the URL below.</p>
-<pre class="r"><code># Google Geocoding:  XML Example
+<pre class="r"><code># Google Geocoding:  XML get.geocode function
 # Earl F Glynn, Franklin Center for Government &amp; Public Integrity, 2010-12-15.
+# Modified 2012-01-06: extracted additional fields.
 
 library(XML)     # htmlTreeParse
 
-# Function to call Google's Geocoding API for given street, city and state.
-# &quot;id&quot; could be used to add a &quot;key&quot; to the data record being processed.
 get.geocode &lt;- function (id, street, city, state, zip)
 {
   address &lt;- paste(street, city, state, zip, sep=&quot;, &quot;)
   URL &lt;- paste(&quot;http://maps.googleapis.com/maps/api/geocode/xml?address=&quot;,
-               gsub(&quot; &quot;, &quot;+&quot;, address), &quot;&amp;sensor=false&quot;, sep=&quot;&quot;)
+               gsub(&quot; &quot;, &quot;+&quot;, address), sep=&quot;&quot;)
   xml &lt;- htmlTreeParse(URL, useInternal=TRUE)
-
   status &lt;- unlist(xpathApply(xml, &quot;//status&quot;, xmlValue))
 
   # if more than one, pick only the first in result[1]
   if (status == &quot;OK&quot;)
   {
+    types &lt;- unlist(xpathApply(xml, &quot;//result[1]/type&quot;, xmlValue))
+    if (is.null(types)) types &lt;- &quot;&quot;
+
     results &lt;- getNodeSet(xml, &quot;//result&quot;)
     result.count &lt;- length(results)     # study why this is ever &gt; 1
 
-    formatted.address &lt;- unlist(xpathApply(xml, &quot;//result[1]/formatted_address&quot;, xmlValue))    
+    formatted.address &lt;- unlist(xpathApply(xml, &quot;//result[1]/formatted_address&quot;, xmlValue))
     if (is.null(formatted.address)) formatted.address &lt;- &quot;&quot;
-    
-    # Add &quot;geo&quot; prefix.  Can later compare if input and output zips match.
-    geozip5 &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'postal_code']/long_name&quot;, xmlValue))
+
+    # Add prefix &quot;geo&quot; to fields that were inputs.  This allows later comparison of
+    # inputs and outputs if ever necessary.
+
+    street_number &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'street_number']/short_name&quot;, xmlValue))
+    if (is.null(street_number)) street_number &lt;- &quot;&quot;
+    route &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'route']/short_name&quot;, xmlValue))
+    if (is.null(route)) route &lt;- &quot;&quot;
+    geostreet &lt;- paste(street_number, route)
+
+    geocity &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'locality']/long_name&quot;, xmlValue))
+    if (is.null(geocity)) geocity &lt;- &quot;&quot;
+
+    geostate &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'administrative_area_level_1']/short_name&quot;, xmlValue))
+    if (is.null(geostate)) geostate &lt;- &quot;&quot;
+
+    geozip5 &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'postal_code']/short_name&quot;, xmlValue))
     if (is.null(geozip5)) geozip5 &lt;- &quot;&quot;
-    
-    geozip4 &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'postal_code_suffix']/long_name&quot;, xmlValue))
+
+    geozip4 &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'postal_code_suffix']/short_name&quot;, xmlValue))
     if (is.null(geozip4)) geozip4 &lt;- &quot;&quot;
 
-    # use &quot;state.code&quot; since &quot;state.name&quot; is a defined R dataset
-    state.code        &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'administrative_area_level_1']/long_name&quot;, xmlValue))
-    if (is.null(state.code)) state.code &lt;- &quot;&quot;
-
-    county &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'administrative_area_level_2']/long_name&quot;, xmlValue))
+    county &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'administrative_area_level_2']/short_name&quot;, xmlValue))
     if (is.null(county)) county &lt;- &quot;&quot;
 
     establishment &lt;- unlist(xpathApply(xml, &quot;//result[1]/address_component[* = 'establishment']/long_name&quot;, xmlValue))
@@ -115,23 +126,30 @@ get.geocode &lt;- function (id, street, city, state, zip)
     location.type &lt;- unlist(xpathApply(xml, &quot;//result[1]/geometry/location_type&quot;, xmlValue))
     if (is.null(location.type)) location.type &lt;- &quot;&quot;
   } else {
+    types &lt;- &quot;&quot;
     formatted.address &lt;- &quot;&quot;
+    geostreet &lt;- &quot;&quot;
+    geocity &lt;- &quot;&quot;
+    geostate &lt;- &quot;&quot;
     geozip5 &lt;- &quot;&quot;
     geozip4 &lt;- &quot;&quot;
-    state.code &lt;- &quot;&quot;
     county &lt;- &quot;&quot;
+    establishment &lt;- &quot;&quot;
     lat &lt;- &quot;&quot;
     lng &lt;- &quot;&quot;
     location.type &lt;- &quot;&quot;
-    establishment &lt;- &quot;&quot;
     result.count &lt;- 0
   }
 
   free(xml)
 
-  data.frame(id, status, street, city, state, state.code, zip, geozip5, geozip4, county,
+  data.frame(id, status,
+             street=street, city=city, state=state, zip=zip,
+             geostreet, geocity, geostate, geozip5, geozip4, county,
              lat, lng, location.type,
-             formatted.address, establishment, result.count,
+             formatted.address, establishment,
+             types=paste(types, collapse=&quot;|&quot;),
+             result.count, row.names=1,
              stringsAsFactors=FALSE)
 }</code></pre>
 <div id="example-use-of-get.geocode-function" class="section level2">
@@ -143,21 +161,22 @@ city   &lt;- &quot;Kansas City&quot;
 state  &lt;- &quot;MO&quot;
 zip    &lt;- &quot;64108&quot;
 
-d &lt;- get.geocode(id, street, city, state, zip)    </code></pre>
+d &lt;- get.geocode(id, street, city, state, zip)</code></pre>
 </div>
 <div id="data.frame-of-geocoded-results" class="section level2">
 <h2>Data.frame of geocoded results</h2>
-<pre class="r"><code>d</code></pre>
-<pre><code>##         id status         street        city state state.code   zip
-## 1 UMKC SOM     OK 2411 Holmes St Kansas City    MO   Missouri 64108
+<pre class="r"><code>options(width=100)
+d</code></pre>
+<pre><code>##         id status         street        city state   zip      geostreet     geocity geostate
+## 1 UMKC SOM     OK 2411 Holmes St Kansas City    MO 64108 2411 Holmes St Kansas City       MO
 ##   geozip5 geozip4         county        lat         lng location.type
 ## 1   64108    2741 Jackson County 39.0831569 -94.5758491       ROOFTOP
 ##                                                                                          formatted.address
 ## 1 University of Missouri Kansas City: Hospital Hill Campus, 2411 Holmes Street, Kansas City, MO 64108, USA
-##                                              establishment result.count
-## 1 University of Missouri Kansas City: Hospital Hill Campus            1</code></pre>
+##                                              establishment          types result.count
+## 1 University of Missouri Kansas City: Hospital Hill Campus street_address            1</code></pre>
 <p>This example will be updated to reflect problems and workarounds found while using Google’s geocoding API.</p>
-<p><em>efg</em><br />2015-01-05 1601</p>
+<p><em>efg</em> 2015-01-06 0959</p>
 </div>
 </div>
 

@@ -5,7 +5,7 @@ output: html_document
 
 ### Earl F Glynn, UMKC Center for Health Insights 
 
-These notes show a JSON Google Geocoding example using R.  See [Google info about geocoding with JSON output](https://developers.google.com/maps/documentation/geocoding/).
+These notes show a JSON Google Geocoding example using R.  See [Google info about geocoding with JSON output](https://developers.google.com/maps/documentation/geocoding/#JSON).
 
 Let's use the [RJSONIO package](http://cran.r-project.org/web/packages/RJSONIO/index.html).
 
@@ -132,7 +132,7 @@ components["postal_code", "short"]
 components["postal_code_suffix", "short"]
 components["administrative_area_level_2|political", "short"]
 components["administrative_area_level_1|political", "short"]
-components["establishment", "short"]
+components["establishment", "long"]
 ```
 
 ## Formatted Address
@@ -177,9 +177,10 @@ types
 Below the prefix "geo" is added to fields of the address that were inputs.  This allows a later comparison of inputs and outputs when geocoding problems are found.
 
 ```{r}
-options(width=130)
+options(width=100)
 data.frame(id, 
            status=JSON$status,
+           street=street, city=city, state=state, zip=zip,
            geostreet=paste(components["street_number", "short"],
                            components["route", "short"]),
            geocity=components["locality|political", "long"],
@@ -191,8 +192,8 @@ data.frame(id,
            lng=geometry$location["lng"],
            location.type=geometry$location_type,
            formattted.address=formatted_address,
-           establishment=components["establishment", "short"],
-           types=types,
+           establishment=components["establishment", "long"],
+           types=paste(types, collapse="|"), 
            result.count=length(JSON$results),
            row.names=1,
            stringsAsFactors=FALSE)

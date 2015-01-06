@@ -1,0 +1,32 @@
+        id status         street        city state zip      geostreet
+1 IDNumber     OK 2411 Holmes St Kansas City    MO     2411 Holmes St
+      geocity geostate geozip5 geozip4         county      lat       lng
+1 Kansas City       MO   64108    2741 Jackson County 39.08316 -94.57585
+  location.type
+1       ROOFTOP
+                                                                                         formatted.address
+1 University of Missouri Kansas City: Hospital Hill Campus, 2411 Holmes Street, Kansas City, MO 64108, USA
+                                             establishment          types
+1 University of Missouri Kansas City: Hospital Hill Campus street_address
+  result.count
+1            1
+                  1                                                                                                         
+id                "IDNumber"                                                                                                
+status            "OK"                                                                                                      
+street            "2411 Holmes St"                                                                                          
+city              "Kansas City"                                                                                             
+state             "MO"                                                                                                      
+zip               "64108"                                                                                                   
+geostreet         "2411 Holmes St"                                                                                          
+geocity           "Kansas City"                                                                                             
+geostate          "MO"                                                                                                      
+geozip5           "64108"                                                                                                   
+geozip4           "2741"                                                                                                    
+county            "Jackson County"                                                                                          
+lat               "39.08316"                                                                                                
+lng               "-94.57585"                                                                                               
+location.type     "ROOFTOP"                                                                                                 
+formatted.address "University of Missouri Kansas City: Hospital Hill Campus, 2411 Holmes Street, Kansas City, MO 64108, USA"
+establishment     "University of Missouri Kansas City: Hospital Hill Campus"                                                
+types             "street_address"                                                                                          
+result.count      "1"                                                                                                       

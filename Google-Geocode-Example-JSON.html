@@ -57,7 +57,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 <div id="earl-f-glynn-umkc-center-for-health-insights" class="section level3">
 <h3>Earl F Glynn, UMKC Center for Health Insights</h3>
-<p>These notes show a JSON Google Geocoding example using R. See <a href="https://developers.google.com/maps/documentation/geocoding/">Google info about geocoding with JSON output</a>.</p>
+<p>These notes show a JSON Google Geocoding example using R. See <a href="https://developers.google.com/maps/documentation/geocoding/#JSON">Google info about geocoding with JSON output</a>.</p>
 <p>Let’s use the <a href="http://cran.r-project.org/web/packages/RJSONIO/index.html">RJSONIO package</a>.</p>
 <pre class="r"><code>library(RJSONIO)   # fromJSON</code></pre>
 <p>Let’s use the address of the UMKC School of Medicine:</p>
@@ -312,7 +312,7 @@ components[-2,]  # suppress establishment row with extra wide fields.</code></pr
 <pre><code>## [1] &quot;Jackson County&quot;</code></pre>
 <pre class="r"><code>components[&quot;administrative_area_level_1|political&quot;, &quot;short&quot;]</code></pre>
 <pre><code>## [1] &quot;MO&quot;</code></pre>
-<pre class="r"><code>components[&quot;establishment&quot;, &quot;short&quot;]</code></pre>
+<pre class="r"><code>components[&quot;establishment&quot;, &quot;long&quot;]</code></pre>
 <pre><code>## [1] &quot;University of Missouri Kansas City: Hospital Hill Campus&quot;</code></pre>
 </div>
 <div id="formatted-address" class="section level2">
@@ -388,9 +388,10 @@ components[-2,]  # suppress establishment row with extra wide fields.</code></pr
 <div id="data.frame-to-return-geocoded-results" class="section level1">
 <h1>Data.frame to return geocoded results</h1>
 <p>Below the prefix “geo” is added to fields of the address that were inputs. This allows a later comparison of inputs and outputs when geocoding problems are found.</p>
-<pre class="r"><code>options(width=130)
+<pre class="r"><code>options(width=100)
 data.frame(id, 
            status=JSON$status,
+           street=street, city=city, state=state, zip=zip,
            geostreet=paste(components[&quot;street_number&quot;, &quot;short&quot;],
                            components[&quot;route&quot;, &quot;short&quot;]),
            geocity=components[&quot;locality|political&quot;, &quot;long&quot;],
@@ -402,20 +403,22 @@ data.frame(id,
            lng=geometry$location[&quot;lng&quot;],
            location.type=geometry$location_type,
            formattted.address=formatted_address,
-           establishment=components[&quot;establishment&quot;, &quot;short&quot;],
-           types=types,
+           establishment=components[&quot;establishment&quot;, &quot;long&quot;],
+           types=paste(types, collapse=&quot;|&quot;), 
            result.count=length(JSON$results),
            row.names=1,
            stringsAsFactors=FALSE)</code></pre>
-<pre><code>##         id status      geostreet     geocity geostate geozip5 geozip4         county   lat    lng location.type
-## 1 UMKC SOM     OK 2411 Holmes St Kansas City       MO   64108    2741 Jackson County 39.08 -94.58       ROOFTOP
+<pre><code>##         id status         street        city state   zip      geostreet     geocity geostate
+## 1 UMKC SOM     OK 2411 Holmes St Kansas City    MO 64108 2411 Holmes St Kansas City       MO
+##   geozip5 geozip4         county   lat    lng location.type
+## 1   64108    2741 Jackson County 39.08 -94.58       ROOFTOP
 ##                                                                                         formattted.address
 ## 1 University of Missouri Kansas City: Hospital Hill Campus, 2411 Holmes Street, Kansas City, MO 64108, USA
 ##                                              establishment          types result.count
 ## 1 University of Missouri Kansas City: Hospital Hill Campus street_address            1</code></pre>
 <p>Missing value fields will likely have NA values.</p>
 <p>This example will be updated to reflect problems and workarounds found while using Google’s geocoding API.</p>
-<p><em>efg</em><br />2015-01-05 1524</p>
+<p><em>efg</em><br />2015-01-06 1000</p>
 </div>
 
 

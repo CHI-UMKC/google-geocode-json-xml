@@ -1,7 +1,9 @@
 Google Geocoding: JSON and XML Examples in R
 ============================================
 
-JSON and XML examples in R markdown files of geocoding a single address using Google's API.
+R markdown files have JSON and XML examples of geocoding a single address using Google's API.
+
+Separate JSON and XML directories show R files with an example.
 
 Google seems to prefer using JSON with their API, so I converted an old XML example to use JSON.
 
